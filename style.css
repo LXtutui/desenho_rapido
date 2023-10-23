@@ -21,3 +21,14 @@ p{
     padding-top: 10px;
     font-size: 25px;
 }
+#pontos{
+    margin-left: 20px;
+}
+#tempo{
+    float:right;
+    margin-right:20px;
+}
+canvas {
+    border:5px double black;
+    margin-top: 150px;
+}

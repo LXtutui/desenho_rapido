@@ -11,12 +11,76 @@ var array1=["aircraft carrier","airplane","alarm clock","ambulance","angel","ani
 "headphones","hedgehog","helicopter", "helmet","hexagon","hockey puck","hockey stick","horse","hospital","hot air balloon","hot dog","hot tub","hourglass","house", "house plant","hurricane","ice cream","jacket","jail","kangaroo","key","keyboard","knee","knife","ladder","lantern","laptop", "leaf","leg","light bulb","lighter","lighthouse","lightning","line","lion","lipstick","lobster","lollipop","mailbox","map","marker", "matches","megaphone","mermaid","microphone","microwave","monkey","moon","mosquito","motorbike","mountain","mouse","moustache","mouth", "mug","mushroom","nail","necklace","nose","ocean","octagon","octopus","onion","oven","owl","paintbrush","paint can","palm tree","panda", "pants","paper clip","parachute","parrot","passport","peanut","pear","peas","pencil","penguin","piano","pickup truck","picture frame", "pig","pillow","pineapple","pizza","pliers","police car","pond","pool","popsicle","postcard","potato","power outlet","purse","rabbit", "raccoon","radio","rain","rainbow","rake","remote control","rhinoceros","rifle","river","roller coaster","rollerskates","sailboat", "sandwich","saw","saxophone","school bus","scissors",
 "scorpion","screwdriver","sea turtle","see saw","shark","sheep","shoe","shorts", "shovel","sink","skateboard","skull",
 "skyscraper","sleeping bag","smiley face","snail","snake","snorkel","snowflake","snowman", "soccer ball","sock","speedboat","spider","spoon","spreadsheet","square","squiggle","squirrel","stairs","star","steak","stereo", "stethoscope","stitches","stop sign","stove","strawberry","streetlight","string bean","submarine","suitcase","sun","swan","sweater", "swingset","sword","syringe","table","teapot","teddy-bear","telephone","television","tennis racquet","tent","The Eiffel Tower", "The Great Wall of China","The Mona Lisa","tiger","toaster","toe","toilet","tooth","toothbrush","toothpaste","tornado","tractor", "traffic light","train","tree","triangle","trombone","truck","trumpet","tshirt","umbrella","underwear","van","vase","violin", "washing machine","watermelon","waterslide","whale","wheel","windmill","wine bottle","wine glass","wristwatch","yoga","zebra","zigzag"];
-var randomNumber= Math.floor((Math.random()*array1.length));
-console.log(randomNumber);
+var randomNumber= Math.floor((Math.random()*array1.length)+1);
+console.log(array1[randomNumber]);
 var sketch = array1[randomNumber];
-document.getElementById("desenho").innerHTML=sketch;
+document.getElementById("desenho").innerHTML="esboço a ser desenhado: "+sketch;
 var timerCounter=0;
 var timerCheck="";
 var drawSketch="";
 var answerHolder="";
 var score=0;
+var canvas;
+var classificadora;
+
+function preload(){
+    classificadora=ml5.imageClassifier("DoodleNet");
+}
+
+function setup(){
+    canvas=createCanvas(300, 300);
+    canvas.center();
+    background("white");
+    canvas.mouseReleased(classifica_canvas);
+}
+
+function updateCanvas(){
+    background("white");
+    randomNumber= Math.floor((Math.random()*array1.length)+1);
+    console.log(array1[randomNumber]);
+    sketch = array1[randomNumber];
+    document.getElementById("desenho").innerHTML="esboço a ser desenhado: "+sketch;
+}
+
+function draw(){
+    strokeWeight(13);
+    stroke("black");
+    if(mouseIsPressed){
+        line(pmouseX, pmouseY, mouseX, mouseY);
+    }
+    checkSketch();
+    if(drawSketch==sketch){
+        answerHolder="set";
+        score++;
+        document.getElementById("pontos").innerHTML="pontuação: "+score;
+    }
+}
+
+function classifica_canvas(){
+    classificadora.classify(canvas, gotResult);
+}
+
+function gotResult(error, results){
+    if(error){
+        console.error(error);
+    }else{
+        console.log(results);
+        drawSketch=results[0].label;
+        document.getElementById("label").innerHTML="seu esboço: "+drawSketch.replace("_", " ");
+        document.getElementById("confidence").innerHTML="precisão: "+Math.round(results[0].confidence*100)+"%";
+    }
+}
+
+function checkSketch(){
+    timerCounter++;
+    document.getElementById("tempo").innerHTML="tempo: "+timerCounter;
+    if(timerCounter>400){
+        timerCounter=0;
+        timerCheck="completado";
+    }
+    if(timerCheck=="completado"||answerHolder=="set"){
+        timerCheck="";
+        answerHolder="";
+        updateCanvas();
+    }
+}
